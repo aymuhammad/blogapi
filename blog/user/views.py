@@ -1,12 +1,9 @@
-from urllib import response
 from .serializer import RegisterSerializer
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
-
-from blog.user import serializer
 
 
 # register API
