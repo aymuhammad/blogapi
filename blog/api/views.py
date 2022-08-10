@@ -5,7 +5,8 @@ from api.models import Post
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
 
 # list the post blog
 class ViewList(APIView):
@@ -17,8 +18,9 @@ class ViewList(APIView):
 
 # to add post and you must have a authentication
 class AddPost(APIView):
-    authentication_classes = [TokenAuthentication]
-    authentication_classes = [IsAuthenticated]
+    queryset = Post.objects.all()
+    # permission_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         serializer = PostSerializer(data=request.data)
@@ -31,8 +33,8 @@ class AddPost(APIView):
 
 # post detail class view api
 class PostDetails(APIView):
-    authentication_classes = [TokenAuthentication]
-    authentication_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk):
         try:
