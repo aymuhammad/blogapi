@@ -1,5 +1,8 @@
+import imp
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+
 from .forms import CommentForm
 
 class Post(models.Model):
@@ -24,7 +27,7 @@ class Post(models.Model):
 
 # to create a comment
 class Comment(models.Model):
-    post = models.ForeignKey(Post,on_delete=models.CASCADE,related_name='comments')
+    post = models.ForeignKey(Post,on_delete=models.CASCADE, related_name='comments')
     name = models.CharField(max_length=80)
     email = models.EmailField()
     body = models.TextField()
