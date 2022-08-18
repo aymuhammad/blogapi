@@ -1,3 +1,4 @@
+from multiprocessing import context
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.serializer import PostSerializer
@@ -7,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authentication import TokenAuthentication
 # from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
+from django.shortcuts import get_object_or_404
 
 # list the post blog
 class ViewList(APIView):
@@ -29,14 +31,19 @@ class AddPost(APIView):
         serializer.save()
         return Response({'payload':serializer.data, 'status':200, 'message':'Blogpost is Created'})
 
-
-
 # post detail class view api
 class PostDetails(APIView):
     # authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get(self, request, pk):
+    def get(self, request, pk, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # since our slug field is not unique, we need the primary key to get a unique post
+        pk = self.kwargs['pk']
+        slug = self.kwargs['slug']
+        post = get_object_or_404(Post, pk=pk, slug=slug)
+        context['post'] = post
+
         try:
             blog = Post.objects.get(id=pk)
             serializer = PostSerializer(blog)
