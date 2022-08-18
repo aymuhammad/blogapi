@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 
-from .forms import CommentForm
+# from .forms import CommentForm
 
 class Tag(models.Model):
     name = models.CharField(max_length=250)
@@ -36,17 +36,17 @@ class Post(models.Model):
         return self.title
 
 
-# to create a comment
-class Comment(models.Model):
-    post = models.ForeignKey(Post,on_delete=models.CASCADE, related_name='comments')
-    name = models.CharField(max_length=80)
-    email = models.EmailField()
-    body = models.TextField()
-    created_on = models.DateTimeField(auto_now_add=True)
-    active = models.BooleanField(default=False)
+# # to create a comment
+# class Comment(models.Model):
+#     post = models.ForeignKey(Post,on_delete=models.CASCADE, related_name='comments')
+#     name = models.CharField(max_length=80)
+#     email = models.EmailField()
+#     body = models.TextField()
+#     created_on = models.DateTimeField(auto_now_add=True)
+#     active = models.BooleanField(default=False)
 
-    class Meta:
-        ordering = ['created_on']
+#     class Meta:
+#         ordering = ['created_on']
 
-    def __str__(self):
-        return 'Comment {} by {}'.format(self.body, self.name)
+#     def __str__(self):
+#         return 'Comment {} by {}'.format(self.body, self.name)
