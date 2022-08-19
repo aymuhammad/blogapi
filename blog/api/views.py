@@ -1,17 +1,20 @@
 from multiprocessing import context
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.serializer import PostSerializer
-from api.models import Post
+from api.serializer import PostSerializer, UserSerializer, serializers, CommentSerializer
+from api.models import Post, Comment
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authentication import TokenAuthentication
-# from rest_framework.permissions import IsAuthenticated
-from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework import permissions, generics
 from django.shortcuts import get_object_or_404
+
+from .permissions import IsOwnerOrReadOnly
 
 # list the post blog
 class ViewList(APIView):
+    queryset = Post.objects.all()
     def get(self, request):
         blog = Post.objects.all()
         serialzer = PostSerializer(blog, many=True)
@@ -22,7 +25,7 @@ class ViewList(APIView):
 class AddPost(APIView):
     queryset = Post.objects.all()
     # permission_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def post(self, request):
         serializer = PostSerializer(data=request.data)
@@ -34,14 +37,11 @@ class AddPost(APIView):
 # post detail class view api
 class PostDetails(APIView):
     # authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-    def get(self, request, pk, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # since our slug field is not unique, we need the primary key to get a unique post
+    def get(self, request, pk):
         pk = self.kwargs['pk']
-        slug = self.kwargs['slug']
-        post = get_object_or_404(Post, pk=pk, slug=slug)
+        post = get_object_or_404(Post, pk=pk)
         context['post'] = post
 
         try:
@@ -51,7 +51,6 @@ class PostDetails(APIView):
         except ObjectDoesNotExist:
             return Response({'status': 404, 'message':'Not Found'})
 
-    
     # to edit a post
     def patch(self,request,pk):
         try:
@@ -73,3 +72,17 @@ class PostDetails(APIView):
             return Response({'message':'Blog successfully Deleted', 'status':200})
         except ObjectDoesNotExist:
             return Response({'status': 404, 'message': 'Not Found'})
+
+
+class CommentList(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = serializers.CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = serializers.CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
