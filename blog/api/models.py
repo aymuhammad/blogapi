@@ -24,29 +24,19 @@ class Post(models.Model):
 
     category = models.CharField(max_length=160, null=True, choices=Category, default='Wev-Devs')
     title = models.CharField(max_length=100, db_index=True)
-    slug = models.SlugField(max_length=100, db_index=True)
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     description = models.TextField()
     content = models.TextField()
     date_posted = models.DateField(default=timezone.now)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
 
+# to create a comment
+class Comment(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    body = models.TextField(blank=False)
+    owner = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='comments', on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', related_name='comments', on_delete=models.CASCADE)
 
-# # to create a comment
-# class Comment(models.Model):
-#     post = models.ForeignKey(Post,on_delete=models.CASCADE, related_name='comments')
-#     name = models.CharField(max_length=80)
-#     email = models.EmailField()
-#     body = models.TextField()
-#     created_on = models.DateTimeField(auto_now_add=True)
-#     active = models.BooleanField(default=False)
-
-#     class Meta:
-#         ordering = ['created_on']
-
-#     def __str__(self):
-#         return 'Comment {} by {}'.format(self.body, self.name)
+    class Meta:
+        ordering =['created']
